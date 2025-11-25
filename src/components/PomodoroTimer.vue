@@ -25,7 +25,6 @@ const formatTime = (seconds) => {
 
 // 4. computed per display
 const displayTime = computed(() => {
-  // Scrivi tu! Usa formatTime
   return formatTime(timeLeft.value)
 })
 
@@ -34,6 +33,31 @@ const buttonText = computed(() => {
   // Scrivi tu! Se running → 'Pause', altrimenti → 'Start'
   return status.value === 'running' ? 'Pause' : 'Start'
 })
+
+const toggleTimer = () => {
+  if (intervalId) return
+  if (status.value === 'running') {
+    clearInterval(intervalId)
+    status.value = 'paused'
+    return
+  }
+  status.value = 'running'
+  intervalId = setInterval(() => {
+    timeLeft.value--
+    if (timeLeft.value <= 0) {
+      clearInterval(intervalId)
+      status.value = 'idle'
+    }
+  }, 1000)
+}
+
+const reset = () => {
+  if (intervalId) {
+    clearInterval(intervalId)
+  }
+  timeLeft.value = 25 * 60
+  status.value = 'idle'
+}
 </script>
 
 <style scoped>
