@@ -63,9 +63,9 @@
 import { ref, computed } from 'vue'
 
 const TIMER_DURATIONS = {
-  work: 5,
-  shortBreak: 4,
-  longBreak: 3,
+  work: 30,
+  shortBreak: 25,
+  longBreak: 27,
 }
 
 //  ref
@@ -76,6 +76,30 @@ const timeLeft = ref(TIMER_DURATIONS.work)
 
 //  variabile normale
 let intervalId = null
+
+// funzione per far tornare l'ora nel formato 2025-11-28
+const getTodayDate = () => {
+  let data = new Date().toISOString().split('T')[0]
+  return data
+}
+
+// funzione per leggere il localstorage
+const loadState = () => {
+  let pomodoro = JSON.parse(localStorage.getItem('pomodoro'))
+  if (!pomodoro) return
+  let today = getTodayDate()
+  if (pomodoro.lastSaved !== today) {
+    sessionsCompleted.value = 0
+    timerType.value = 'work'
+    timeLeft.value = TIMER_DURATIONS.work
+  } else {
+    sessionsCompleted.value = pomodoro.sessionsCompleted
+    timerType.value = pomodoro.timerType
+    timeLeft.value = pomodoro.timeLeft
+  }
+}
+
+loadState()
 
 //  funzione formatTime
 const formatTime = (seconds) => {
@@ -113,10 +137,22 @@ const timerLabel = computed(() => {
   if (timerType.value === 'longBreak') return 'Long Break'
 })
 
+// funzione per salvare in localstorage
+const saveState = () => {
+  const state = {
+    sessionsCompleted: sessionsCompleted.value,
+    timerType: timerType.value,
+    timeLeft: timeLeft.value,
+    lastSaved: getTodayDate(),
+  }
+  localStorage.setItem('pomodoro', JSON.stringify(state))
+}
+
+// funzione pr cambiare il tempo
 const getDurationForType = (type) => {
   return TIMER_DURATIONS[type]
 }
-
+// funzione per cambiare il timer
 const getNextTimerType = () => {
   if (timerType.value === 'work') {
     return sessionsCompleted.value > 0 && sessionsCompleted.value % 4 === 0
@@ -145,19 +181,23 @@ const handleTimerComplete = () => {
   timerType.value = getNextTimerType()
   timeLeft.value = getDurationForType(timerType.value)
   startTimer()
+  saveState()
 }
 
+// funzione gestisce il timer
 const toggleTimer = () => {
   if (status.value === 'running') {
     clearInterval(intervalId)
     intervalId = null
     status.value = 'paused'
+    saveState()
     return
   }
 
   startTimer()
+  saveState()
 }
-
+// funzione reset
 const reset = () => {
   if (intervalId) {
     clearInterval(intervalId)
@@ -166,6 +206,7 @@ const reset = () => {
   timeLeft.value = TIMER_DURATIONS.work
   timerType.value = 'work'
   status.value = 'idle'
+  saveState()
 }
 </script>
 
