@@ -8,9 +8,19 @@
         🍅 Pomodoro Timer
       </h1>
 
+      <!-- Timer Type Indicator -->
+      <div class="mb-4 text-center">
+        <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gray-100">
+          <span class="text-3xl">{{ timerEmoji }}</span>
+          <span :class="['text-xl font-bold', timerColor]">
+            {{ timerLabel }}
+          </span>
+        </div>
+      </div>
+
       <!-- Timer Display -->
       <div class="mb-8">
-        <div class="text-7xl md:text-8xl font-mono font-bold text-center text-red-500">
+        <div :class="['text-7xl md:text-8xl font-mono font-bold text-center', timerColor]">
           {{ displayTime }}
         </div>
       </div>
@@ -52,33 +62,90 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-const WORK_TIME = 5
+const TIMER_DURATIONS = {
+  work: 5,
+  shortBreak: 4,
+  longBreak: 3,
+}
 
-// 1. ref
-const timeLeft = ref(WORK_TIME)
+//  ref
 const status = ref('idle')
 const sessionsCompleted = ref(0)
+const timerType = ref('work')
+const timeLeft = ref(TIMER_DURATIONS.work)
 
-// 2. variabile normale
+//  variabile normale
 let intervalId = null
 
-// 3. funzione formatTime
+//  funzione formatTime
 const formatTime = (seconds) => {
   const minutes = Math.floor(seconds / 60)
   const secs = seconds % 60
   return `${minutes}:${secs.toString().padStart(2, '0')}`
 }
 
-// 4. computed per display
+//  computed per display
 const displayTime = computed(() => {
   return formatTime(timeLeft.value)
 })
 
-// 5. computed per button text
+//  computed per button text
 const buttonText = computed(() => {
-  // Scrivi tu! Se running → 'Pause', altrimenti → 'Start'
   return status.value === 'running' ? 'Pause' : 'Start'
 })
+
+// computed per timer & emoji
+const timerColor = computed(() => {
+  if (timerType.value === 'work') return 'text-red-500'
+  if (timerType.value === 'shortBreak') return 'text-green-500'
+  if (timerType.value === 'longBreak') return 'text-blue-500'
+})
+
+const timerEmoji = computed(() => {
+  if (timerType.value === 'work') return '🍅'
+  if (timerType.value === 'shortBreak') return '☕'
+  if (timerType.value === 'longBreak') return '🌴'
+})
+
+const timerLabel = computed(() => {
+  if (timerType.value === 'work') return 'Work Session'
+  if (timerType.value === 'shortBreak') return 'Short Break'
+  if (timerType.value === 'longBreak') return 'Long Break'
+})
+
+const getDurationForType = (type) => {
+  return TIMER_DURATIONS[type]
+}
+
+const getNextTimerType = () => {
+  if (timerType.value === 'work') {
+    return sessionsCompleted.value > 0 && sessionsCompleted.value % 4 === 0
+      ? 'longBreak'
+      : 'shortBreak'
+  }
+  return 'work'
+}
+
+// Funzione per far partire il timer
+const startTimer = () => {
+  if (intervalId) return
+  status.value = 'running'
+  intervalId = setInterval(() => {
+    timeLeft.value--
+    if (timeLeft.value <= 0) {
+      handleTimerComplete()
+    }
+  }, 1000)
+}
+
+const handleTimerComplete = () => {
+  clearInterval(intervalId)
+  intervalId = null
+  if (timerType.value === 'work') sessionsCompleted.value++
+  timerType.value = getNextTimerType()
+  timeLeft.value = getDurationForType(timerType.value)
+  startTimer()
+}
 
 const toggleTimer = () => {
   if (status.value === 'running') {
@@ -88,20 +155,7 @@ const toggleTimer = () => {
     return
   }
 
-  if (intervalId) return
-
-  if (timeLeft.value <= 0) timeLeft.value = WORK_TIME
-
-  status.value = 'running'
-  intervalId = setInterval(() => {
-    timeLeft.value--
-    if (timeLeft.value <= 0) {
-      clearInterval(intervalId)
-      intervalId = null
-      status.value = 'idle'
-      sessionsCompleted.value++
-    }
-  }, 1000)
+  startTimer()
 }
 
 const reset = () => {
@@ -109,7 +163,8 @@ const reset = () => {
     clearInterval(intervalId)
     intervalId = null
   }
-  timeLeft.value = WORK_TIME
+  timeLeft.value = TIMER_DURATIONS.work
+  timerType.value = 'work'
   status.value = 'idle'
 }
 </script>
