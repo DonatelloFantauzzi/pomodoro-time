@@ -16,11 +16,11 @@
       </div>
 
       <!-- Controls -->
-      <div class="flex gap-4 justify-center">
+      <div class="flex gap-4 justify-center mb-8">
         <!-- Start/Pause Button -->
         <button
           @click="toggleTimer"
-          class="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-colors duration-200 text-lg"
+          class="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           {{ buttonText }}
         </button>
@@ -29,10 +29,21 @@
         <button
           v-if="status !== 'idle'"
           @click="reset"
-          class="px-8 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors duration-200 text-lg"
+          class="px-8 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           Reset
         </button>
+      </div>
+
+      <!-- Session Counter -->
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <div class="flex items-center justify-center gap-2">
+          <span class="text-2xl">🍅</span>
+          <span class="text-lg font-semibold text-gray-700"> Sessions Today: </span>
+          <span class="text-2xl font-bold text-red-500 bg-red-50 px-4 py-1 rounded-full">
+            {{ sessionsCompleted }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -46,6 +57,7 @@ const WORK_TIME = 5
 // 1. ref
 const timeLeft = ref(WORK_TIME)
 const status = ref('idle')
+const sessionsCompleted = ref(0)
 
 // 2. variabile normale
 let intervalId = null
@@ -87,6 +99,7 @@ const toggleTimer = () => {
       clearInterval(intervalId)
       intervalId = null
       status.value = 'idle'
+      sessionsCompleted.value++
     }
   }, 1000)
 }
