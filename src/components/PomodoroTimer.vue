@@ -26,7 +26,7 @@
       </div>
 
       <!-- Completion Message (NUOVO) -->
-      <div v-if="status === 'completed'" class="mb-6 text-center animate-fade-in">
+      <div v-if="state.status === 'completed'" class="mb-6 text-center animate-fade-in">
         <div
           class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-200"
         >
@@ -56,7 +56,7 @@
 
         <!-- Reset Button -->
         <button
-          v-if="status !== 'idle'"
+          v-if="state.status !== 'idle'"
           @click="reset"
           class="px-8 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
         >
@@ -74,6 +74,7 @@
           </span>
         </div>
       </div>
+      <settings-panel />
     </div>
   </div>
 </template>
@@ -83,21 +84,13 @@ import { ref, computed } from 'vue'
 //importo il composable
 import { useSound } from '../composables/useSound'
 import { useStorage } from '@/composables/useStorage'
+
+//importo componente
+import SettingsPanel from './SettingsPanel.vue'
+
 //destrutturo il composable
 const { playAlarm } = useSound()
 const { state, settings, saveToLocalStorage } = useStorage()
-
-// const TIMER_DURATIONS = {
-//   work: 5,
-//   shortBreak: 4,
-//   longBreak: 2,
-// }
-
-//  ref
-const status = ref('idle')
-// const sessionsCompleted = ref(0)
-// const timerType = ref('work')
-// const timeLeft = ref(TIMER_DURATIONS.work)
 
 //  variabile normale
 let intervalId = null
@@ -116,7 +109,7 @@ const displayTime = computed(() => {
 
 //  computed per button text
 const buttonText = computed(() => {
-  return status.value === 'running' ? 'Pause' : 'Start'
+  return state.value.status === 'running' ? 'Pause' : 'Start'
 })
 
 // computed per timer & emoji
@@ -155,7 +148,7 @@ const getNextTimerType = () => {
 // Funzione per far partire il timer
 const startTimer = () => {
   if (intervalId) return
-  status.value = 'running'
+  state.value.status = 'running'
   intervalId = setInterval(() => {
     state.value.timeLeft--
     if (state.value.timeLeft <= 0) {
@@ -170,7 +163,7 @@ const handleTimerComplete = () => {
   intervalId = null
 
   // 2. Cambia stato a 'completed'
-  status.value = 'completed'
+  state.value.status = 'completed'
 
   // 3. Suona l'allarme SUBITO
   playAlarm(state.value.timerType)
@@ -185,23 +178,21 @@ const handleTimerComplete = () => {
   state.value.timeLeft = getDurationForType(state.value.timerType)
 
   // 6. Salva stato
-  // saveState()
   saveToLocalStorage()
 }
 
 // funzione gestisce il timer
 const toggleTimer = () => {
-  if (status.value === 'running') {
+  if (state.value.status === 'running') {
     clearInterval(intervalId)
     intervalId = null
-    status.value = 'paused'
-    // saveState()
+    state.value.status = 'paused'
     saveToLocalStorage()
     return
   }
 
   startTimer()
-  // saveState()
+  saveToLocalStorage()
 }
 // funzione reset
 const reset = () => {
@@ -211,8 +202,7 @@ const reset = () => {
   }
   state.value.timeLeft = settings.value.work
   state.value.timerType = 'work'
-  status.value = 'idle'
-  // saveState()
+  state.value.status = 'idle'
   saveToLocalStorage()
 }
 </script>
