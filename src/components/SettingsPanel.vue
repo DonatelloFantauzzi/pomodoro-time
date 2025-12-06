@@ -20,118 +20,119 @@
         {{ isOpen ? '▲' : '▼' }}
       </span>
     </button>
-
-    <!-- Settings Panel (Accordion) -->
-    <div v-if="isOpen" class="mt-4 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl space-y-6">
-      <!-- Work Duration -->
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          🍅 Work Duration (minutes)
-        </label>
-        <input
-          type="number"
-          min="1"
-          max="60"
-          v-model.number="tempSettings.work"
-          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:border-red-500 focus:outline-none transition-colors"
-        />
-      </div>
-
-      <!-- Short Break Duration -->
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          ☕ Short Break (minutes)
-        </label>
-        <input
-          type="number"
-          min="1"
-          max="30"
-          v-model.number="tempSettings.shortBreak"
-          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:border-green-500 focus:outline-none transition-colors"
-        />
-      </div>
-
-      <!-- Long Break Duration -->
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          🌴 Long Break (minutes)
-        </label>
-        <input
-          type="number"
-          min="1"
-          max="60"
-          v-model.number="tempSettings.longBreak"
-          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-        />
-      </div>
-
-      <!-- Sound Volume -->
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          🔊 Sound Volume
-        </label>
-        <div class="flex items-center gap-4">
+    <Transition name="expand">
+      <!-- Settings Panel (Accordion) -->
+      <div v-if="isOpen" class="mt-4 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl space-y-6">
+        <!-- Work Duration -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            🍅 Work Duration (minutes)
+          </label>
           <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            v-model.number="tempSettings.soundVolume"
-            class="flex-1"
+            type="number"
+            min="1"
+            max="60"
+            v-model.number="tempSettings.work"
+            class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:border-red-500 focus:outline-none transition-colors"
           />
-          <span class="text-sm font-mono text-gray-600 w-12 dark:text-white">
-            {{ Math.round(tempSettings.soundVolume * 100) }}%
-          </span>
         </div>
-      </div>
 
-      <!-- Dark Mode Toggle -->
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          🌙 Theme
-        </label>
-        <div class="flex items-center gap-4">
+        <!-- Short Break Duration -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            ☕ Short Break (minutes)
+          </label>
+          <input
+            type="number"
+            min="1"
+            max="30"
+            v-model.number="tempSettings.shortBreak"
+            class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:border-green-500 focus:outline-none transition-colors"
+          />
+        </div>
+
+        <!-- Long Break Duration -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            🌴 Long Break (minutes)
+          </label>
+          <input
+            type="number"
+            min="1"
+            max="60"
+            v-model.number="tempSettings.longBreak"
+            class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+          />
+        </div>
+
+        <!-- Sound Volume -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            🔊 Sound Volume
+          </label>
+          <div class="flex items-center gap-4">
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              v-model.number="tempSettings.soundVolume"
+              class="flex-1"
+            />
+            <span class="text-sm font-mono text-gray-600 w-12 dark:text-white">
+              {{ Math.round(tempSettings.soundVolume * 100) }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- Dark Mode Toggle -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            🌙 Theme
+          </label>
+          <div class="flex items-center gap-4">
+            <button
+              @click="tempSettings.theme = 'light'"
+              :class="[
+                'flex-1 py-2 px-4 rounded-lg font-medium transition-all',
+                tempSettings.theme === 'light'
+                  ? 'bg-yellow-400 text-gray-900 shadow-md'
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300',
+              ]"
+            >
+              ☀️ Light
+            </button>
+            <button
+              @click="tempSettings.theme = 'dark'"
+              :class="[
+                'flex-1 py-2 px-4 rounded-lg font-medium transition-all',
+                tempSettings.theme === 'dark'
+                  ? 'bg-gray-800 text-white shadow-md'
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300',
+              ]"
+            >
+              🌙 Dark
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3 pt-2">
           <button
-            @click="tempSettings.theme = 'light'"
-            :class="[
-              'flex-1 py-2 px-4 rounded-lg font-medium transition-all',
-              tempSettings.theme === 'light'
-                ? 'bg-yellow-400 text-gray-900 shadow-md'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300',
-            ]"
+            @click="handleSave"
+            class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
           >
-            ☀️ Light
+            💾 Save Settings
           </button>
           <button
-            @click="tempSettings.theme = 'dark'"
-            :class="[
-              'flex-1 py-2 px-4 rounded-lg font-medium transition-all',
-              tempSettings.theme === 'dark'
-                ? 'bg-gray-800 text-white shadow-md'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300',
-            ]"
+            @click="handleCancel"
+            class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors duration-200"
           >
-            🌙 Dark
+            Cancel
           </button>
         </div>
       </div>
-
-      <!-- Action Buttons -->
-      <div class="flex gap-3 pt-2">
-        <button
-          @click="handleSave"
-          class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
-        >
-          💾 Save Settings
-        </button>
-        <button
-          @click="handleCancel"
-          class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors duration-200"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -188,3 +189,30 @@ watch(
   },
 )
 </script>
+
+<style scoped>
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+}
+
+.expand-enter-from {
+  opacity: 0;
+  max-height: 0;
+}
+
+.expand-enter-to {
+  opacity: 1;
+  max-height: 1000px;
+}
+
+.expand-leave-from {
+  opacity: 1;
+  max-height: 1000px;
+}
+
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+</style>

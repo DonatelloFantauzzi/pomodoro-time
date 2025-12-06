@@ -22,13 +22,19 @@
 
       <!-- Timer Display -->
       <div class="mb-8">
-        <div :class="['text-7xl md:text-8xl font-mono font-bold text-center', timerColor]">
+        <div
+          :class="[
+            'text-7xl md:text-8xl font-mono font-bold text-center',
+            timerColor,
+            state.status === 'running' ? 'timer-pulse' : '',
+          ]"
+        >
           {{ displayTime }}
         </div>
       </div>
 
       <!-- Completion Message (NUOVO) -->
-      <div v-if="state.status === 'completed'" class="mb-6 text-center animate-fade-in">
+      <div v-if="state.status === 'completed'" class="mb-6 text-center animate-slide-up">
         <div
           class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-200"
         >
@@ -51,7 +57,7 @@
         <!-- Start/Pause Button -->
         <button
           @click="toggleTimer"
-          class="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+          class="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-200 text-lg shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
         >
           {{ buttonText }}
         </button>
@@ -60,7 +66,7 @@
         <button
           v-if="state.status !== 'idle'"
           @click="reset"
-          class="px-8 py-4 bg-gray-200 dark:text-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+          class="px-8 py-4 bg-gray-200 dark:text-gray-200 dark:bg-gray-700 hover:bg-gray-300 active:bg-gray-400 text-gray-700 font-semibold rounded-xl transition-all duration-200 text-lg shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
         >
           Reset
         </button>
@@ -73,7 +79,10 @@
           <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">
             Sessions Today:
           </span>
-          <span class="text-2xl font-bold text-red-500 bg-red-50 px-4 py-1 rounded-full">
+          <span
+            :key="state.sessionsCompleted"
+            class="text-2xl font-bold text-red-500 bg-red-50 px-4 py-1 rounded-full animate-bounce-once"
+          >
             {{ state.sessionsCompleted }}
           </span>
         </div>
@@ -212,5 +221,46 @@ const reset = () => {
 </script>
 
 <style scoped>
-/* CSS dopo */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.timer-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUpFade 0.5s ease-out;
+}
+
+@keyframes bounceOnce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+}
+
+.animate-bounce-once {
+  animation: bounceOnce 0.5s ease;
+}
 </style>
