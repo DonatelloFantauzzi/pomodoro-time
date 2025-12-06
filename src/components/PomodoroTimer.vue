@@ -1,18 +1,20 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4"
+    class="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4 dark:from-gray-900 dark:to-gray-800"
   >
-    <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 max-w-md w-full">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 max-w-md w-full">
       <!-- Header -->
-      <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-8 dark:text-white">
         🍅 Pomodoro Timer
       </h1>
 
       <!-- Timer Type Indicator -->
       <div class="mb-4 text-center">
-        <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gray-100">
+        <div
+          class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gray-100 dark:bg-gray-700"
+        >
           <span class="text-3xl">{{ timerEmoji }}</span>
-          <span :class="['text-xl font-bold', timerColor]">
+          <span :class="['text-xl font-bold dark:text-white', timerColor]">
             {{ timerLabel }}
           </span>
         </div>
@@ -58,7 +60,7 @@
         <button
           v-if="state.status !== 'idle'"
           @click="reset"
-          class="px-8 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+          class="px-8 py-4 bg-gray-200 dark:text-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           Reset
         </button>
@@ -68,7 +70,9 @@
       <div class="mt-6 pt-6 border-t border-gray-200">
         <div class="flex items-center justify-center gap-2">
           <span class="text-2xl">🍅</span>
-          <span class="text-lg font-semibold text-gray-700"> Sessions Today: </span>
+          <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">
+            Sessions Today:
+          </span>
           <span class="text-2xl font-bold text-red-500 bg-red-50 px-4 py-1 rounded-full">
             {{ state.sessionsCompleted }}
           </span>

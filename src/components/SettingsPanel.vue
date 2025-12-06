@@ -1,10 +1,10 @@
 <template>
   <div
     v-if="isDisabled"
-    class="mb-4 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg flex items-center gap-3"
+    class="my-4 p-4 bg-yellow-50 border-2 border-yellow-200 dark:bg-yellow-900/30 dark:border-yellow-700 rounded-lg flex items-center gap-3"
   >
     <span class="text-2xl">⏸️</span>
-    <p class="text-sm font-medium text-yellow-800">
+    <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
       Settings are disabled while timer is running. Pause or stop the timer to make changes.
     </p>
   </div>
@@ -22,10 +22,10 @@
     </button>
 
     <!-- Settings Panel (Accordion) -->
-    <div v-if="isOpen" class="mt-4 p-6 bg-gray-50 rounded-xl space-y-6">
+    <div v-if="isOpen" class="mt-4 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl space-y-6">
       <!-- Work Duration -->
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           🍅 Work Duration (minutes)
         </label>
         <input
@@ -33,13 +33,13 @@
           min="1"
           max="60"
           v-model.number="tempSettings.work"
-          class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:outline-none transition-colors"
+          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:border-red-500 focus:outline-none transition-colors"
         />
       </div>
 
       <!-- Short Break Duration -->
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           ☕ Short Break (minutes)
         </label>
         <input
@@ -47,13 +47,13 @@
           min="1"
           max="30"
           v-model.number="tempSettings.shortBreak"
-          class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none transition-colors"
+          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:border-green-500 focus:outline-none transition-colors"
         />
       </div>
 
       <!-- Long Break Duration -->
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           🌴 Long Break (minutes)
         </label>
         <input
@@ -61,13 +61,15 @@
           min="1"
           max="60"
           v-model.number="tempSettings.longBreak"
-          class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
         />
       </div>
 
       <!-- Sound Volume -->
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2"> 🔊 Sound Volume </label>
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          🔊 Sound Volume
+        </label>
         <div class="flex items-center gap-4">
           <input
             type="range"
@@ -77,9 +79,40 @@
             v-model.number="tempSettings.soundVolume"
             class="flex-1"
           />
-          <span class="text-sm font-mono text-gray-600 w-12">
+          <span class="text-sm font-mono text-gray-600 w-12 dark:text-white">
             {{ Math.round(tempSettings.soundVolume * 100) }}%
           </span>
+        </div>
+      </div>
+
+      <!-- Dark Mode Toggle -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          🌙 Theme
+        </label>
+        <div class="flex items-center gap-4">
+          <button
+            @click="tempSettings.theme = 'light'"
+            :class="[
+              'flex-1 py-2 px-4 rounded-lg font-medium transition-all',
+              tempSettings.theme === 'light'
+                ? 'bg-yellow-400 text-gray-900 shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300',
+            ]"
+          >
+            ☀️ Light
+          </button>
+          <button
+            @click="tempSettings.theme = 'dark'"
+            :class="[
+              'flex-1 py-2 px-4 rounded-lg font-medium transition-all',
+              tempSettings.theme === 'dark'
+                ? 'bg-gray-800 text-white shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300',
+            ]"
+          >
+            🌙 Dark
+          </button>
         </div>
       </div>
 
@@ -103,11 +136,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 // Import useStorage composable
 import { useStorage } from '@/composables/useStorage'
 // destrutturo il composable
-const { settings, state, saveToLocalStorage } = useStorage()
+const { settings, state, saveToLocalStorage, applyTheme } = useStorage()
 
 // ref
 const tempSettings = ref({ ...settings.value })
@@ -145,5 +178,13 @@ const handleSave = () => {
 const handleCancel = () => {
   tempSettings.value = { ...settings.value }
   isOpen.value = false
+  applyTheme(settings.value.theme)
 }
+
+watch(
+  () => tempSettings.value.theme,
+  (newTheme) => {
+    applyTheme(newTheme)
+  },
+)
 </script>

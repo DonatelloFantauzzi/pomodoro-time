@@ -1,5 +1,5 @@
 // composables/useStorage.js
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 const DEFAULT_SETTINGS = {
   work: 5,
   shortBreak: 4,
@@ -60,6 +60,18 @@ const saveToLocalStorage = () => {
   localStorage.setItem('pomodoro', JSON.stringify(dataToSave))
 }
 
+const applyTheme = (theme) => {
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+  }
+}
+
+applyTheme(settings.value.theme)
+
+watch(() => settings.value.theme, applyTheme)
+
 // 5. Init on composable creation
 loadFromLocalStorage()
 
@@ -69,5 +81,6 @@ export function useStorage() {
     state,
     settings,
     saveToLocalStorage,
+    applyTheme,
   }
 }

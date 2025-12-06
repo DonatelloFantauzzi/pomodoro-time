@@ -1,7 +1,8 @@
 import { ref } from 'vue'
+import { useStorage } from './useStorage'
 export function useSound() {
   let audioContext = null
-  const volume = ref(0.5)
+  const { settings } = useStorage()
   const playAlarm = (type = 'work') => {
     if (!audioContext) {
       audioContext = new AudioContext()
@@ -11,7 +12,7 @@ export function useSound() {
     const oscillator = audioContext.createOscillator()
     const gainNode = audioContext.createGain()
 
-    gainNode.gain.value = volume.value
+    gainNode.gain.value = settings.value.soundVolume
     oscillator.connect(gainNode)
     gainNode.connect(audioContext.destination)
     oscillator.type = 'sine'
@@ -29,7 +30,6 @@ export function useSound() {
       oscillator.frequency.setValueAtTime(783.99, now) // SOL
       oscillator.frequency.setValueAtTime(659.25, now + 0.25) // MI
       oscillator.frequency.setValueAtTime(523.25, now + 0.5) // DO
-      gainNode.gain.value = volume.value * 0.8 // Un po' più basso
       oscillator.start(now)
       oscillator.stop(now + 0.75)
     } else if (type === 'longBreak') {
