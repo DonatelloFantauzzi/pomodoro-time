@@ -25,6 +25,25 @@
         </div>
       </div>
 
+      <!-- Completion Message (NUOVO) -->
+      <div v-if="status === 'completed'" class="mb-6 text-center animate-fade-in">
+        <div
+          class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-200"
+        >
+          <p v-if="timerLabel === 'Work Session'" class="text-xl font-bold text-green-600 mb-2">
+            ☕ Break's Over!
+          </p>
+          <p v-else class="text-xl font-bold text-blue-600 mb-2">🎉 Work Session Complete!</p>
+
+          <p class="text-gray-700 mb-3">
+            <span v-if="timerLabel === 'Work Session'">Ready for another work session?</span>
+            <span v-else>Time for a {{ state.timeLeft }} minute break</span>
+          </p>
+
+          <p class="text-sm text-gray-500">Click Start when you're ready to continue</p>
+        </div>
+      </div>
+
       <!-- Controls -->
       <div class="flex gap-4 justify-center mb-8">
         <!-- Start/Pause Button -->
@@ -51,7 +70,7 @@
           <span class="text-2xl">🍅</span>
           <span class="text-lg font-semibold text-gray-700"> Sessions Today: </span>
           <span class="text-2xl font-bold text-red-500 bg-red-50 px-4 py-1 rounded-full">
-            {{ sessionsCompleted }}
+            {{ state.sessionsCompleted }}
           </span>
         </div>
       </div>
@@ -61,45 +80,27 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+//importo il composable
+import { useSound } from '../composables/useSound'
+import { useStorage } from '@/composables/useStorage'
+//destrutturo il composable
+const { playAlarm } = useSound()
+const { state, settings, saveToLocalStorage } = useStorage()
 
-const TIMER_DURATIONS = {
-  work: 30,
-  shortBreak: 25,
-  longBreak: 27,
-}
+// const TIMER_DURATIONS = {
+//   work: 5,
+//   shortBreak: 4,
+//   longBreak: 2,
+// }
 
 //  ref
 const status = ref('idle')
-const sessionsCompleted = ref(0)
-const timerType = ref('work')
-const timeLeft = ref(TIMER_DURATIONS.work)
+// const sessionsCompleted = ref(0)
+// const timerType = ref('work')
+// const timeLeft = ref(TIMER_DURATIONS.work)
 
 //  variabile normale
 let intervalId = null
-
-// funzione per far tornare l'ora nel formato 2025-11-28
-const getTodayDate = () => {
-  let data = new Date().toISOString().split('T')[0]
-  return data
-}
-
-// funzione per leggere il localstorage
-const loadState = () => {
-  let pomodoro = JSON.parse(localStorage.getItem('pomodoro'))
-  if (!pomodoro) return
-  let today = getTodayDate()
-  if (pomodoro.lastSaved !== today) {
-    sessionsCompleted.value = 0
-    timerType.value = 'work'
-    timeLeft.value = TIMER_DURATIONS.work
-  } else {
-    sessionsCompleted.value = pomodoro.sessionsCompleted
-    timerType.value = pomodoro.timerType
-    timeLeft.value = pomodoro.timeLeft
-  }
-}
-
-loadState()
 
 //  funzione formatTime
 const formatTime = (seconds) => {
@@ -110,7 +111,7 @@ const formatTime = (seconds) => {
 
 //  computed per display
 const displayTime = computed(() => {
-  return formatTime(timeLeft.value)
+  return formatTime(state.value.timeLeft)
 })
 
 //  computed per button text
@@ -120,42 +121,31 @@ const buttonText = computed(() => {
 
 // computed per timer & emoji
 const timerColor = computed(() => {
-  if (timerType.value === 'work') return 'text-red-500'
-  if (timerType.value === 'shortBreak') return 'text-green-500'
-  if (timerType.value === 'longBreak') return 'text-blue-500'
+  if (state.value.timerType === 'work') return 'text-red-500'
+  if (state.value.timerType === 'shortBreak') return 'text-green-500'
+  if (state.value.timerType === 'longBreak') return 'text-blue-500'
 })
 
 const timerEmoji = computed(() => {
-  if (timerType.value === 'work') return '🍅'
-  if (timerType.value === 'shortBreak') return '☕'
-  if (timerType.value === 'longBreak') return '🌴'
+  if (state.value.timerType === 'work') return '🍅'
+  if (state.value.timerType === 'shortBreak') return '☕'
+  if (state.value.timerType === 'longBreak') return '🌴'
 })
 
 const timerLabel = computed(() => {
-  if (timerType.value === 'work') return 'Work Session'
-  if (timerType.value === 'shortBreak') return 'Short Break'
-  if (timerType.value === 'longBreak') return 'Long Break'
+  if (state.value.timerType === 'work') return 'Work Session'
+  if (state.value.timerType === 'shortBreak') return 'Short Break'
+  if (state.value.timerType === 'longBreak') return 'Long Break'
 })
-
-// funzione per salvare in localstorage
-const saveState = () => {
-  const state = {
-    sessionsCompleted: sessionsCompleted.value,
-    timerType: timerType.value,
-    timeLeft: timeLeft.value,
-    lastSaved: getTodayDate(),
-  }
-  localStorage.setItem('pomodoro', JSON.stringify(state))
-}
 
 // funzione pr cambiare il tempo
 const getDurationForType = (type) => {
-  return TIMER_DURATIONS[type]
+  return settings.value[type]
 }
 // funzione per cambiare il timer
 const getNextTimerType = () => {
-  if (timerType.value === 'work') {
-    return sessionsCompleted.value > 0 && sessionsCompleted.value % 4 === 0
+  if (state.value.timerType === 'work') {
+    return state.value.sessionsCompleted > 0 && state.value.sessionsCompleted % 4 === 0
       ? 'longBreak'
       : 'shortBreak'
   }
@@ -167,21 +157,36 @@ const startTimer = () => {
   if (intervalId) return
   status.value = 'running'
   intervalId = setInterval(() => {
-    timeLeft.value--
-    if (timeLeft.value <= 0) {
+    state.value.timeLeft--
+    if (state.value.timeLeft <= 0) {
       handleTimerComplete()
     }
   }, 1000)
 }
 
 const handleTimerComplete = () => {
+  // 1. Ferma il timer
   clearInterval(intervalId)
   intervalId = null
-  if (timerType.value === 'work') sessionsCompleted.value++
-  timerType.value = getNextTimerType()
-  timeLeft.value = getDurationForType(timerType.value)
-  startTimer()
-  saveState()
+
+  // 2. Cambia stato a 'completed'
+  status.value = 'completed'
+
+  // 3. Suona l'allarme SUBITO
+  playAlarm(state.value.timerType)
+
+  // 4. Aggiorna contatori
+  if (state.value.timerType === 'work') {
+    state.value.sessionsCompleted++
+  }
+
+  // 5. Prepara il prossimo timer (MA NON lo avvia!)
+  state.value.timerType = getNextTimerType()
+  state.value.timeLeft = getDurationForType(state.value.timerType)
+
+  // 6. Salva stato
+  // saveState()
+  saveToLocalStorage()
 }
 
 // funzione gestisce il timer
@@ -190,12 +195,13 @@ const toggleTimer = () => {
     clearInterval(intervalId)
     intervalId = null
     status.value = 'paused'
-    saveState()
+    // saveState()
+    saveToLocalStorage()
     return
   }
 
   startTimer()
-  saveState()
+  // saveState()
 }
 // funzione reset
 const reset = () => {
@@ -203,10 +209,11 @@ const reset = () => {
     clearInterval(intervalId)
     intervalId = null
   }
-  timeLeft.value = TIMER_DURATIONS.work
-  timerType.value = 'work'
+  state.value.timeLeft = settings.value.work
+  state.value.timerType = 'work'
   status.value = 'idle'
-  saveState()
+  // saveState()
+  saveToLocalStorage()
 }
 </script>
 
